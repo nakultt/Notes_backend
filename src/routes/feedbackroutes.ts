@@ -63,8 +63,10 @@ router.post("/feedback/dislike", async (req, res) => {
 
 })
 
-router.get("/feedback", async (require, res) => {
+router.get("/feedback", async (req, res) => {
     const totalLikes = await Feedback.countDocuments({likes: 1})
     const totalDislikes = await Feedback.countDocuments({dislikes: 1})
     res.json({likes: totalLikes, dislikes: totalDislikes})
 })
+
+export default router
