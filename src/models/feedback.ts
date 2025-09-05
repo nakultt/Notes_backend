@@ -6,13 +6,10 @@ const feedbackSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    likes: { 
-        type: Number, 
-        default: 0 
-    },
-    dislikes: { 
-        type: Number, 
-        default: 0 
+    vote: { 
+        type: String, 
+        enum: ['like', 'dislike', null], 
+        default: null 
     }
 })
 

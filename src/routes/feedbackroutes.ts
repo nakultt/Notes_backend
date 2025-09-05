@@ -17,21 +17,17 @@ router.post("/feedback/like", async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload
     const userId = decoded.userId
 
-    const existing = await Feedback.findOne({userId})
-    if (existing){
-        return res.status(400).json({ error: 'Already voted' })
-    }
-
-    const feedback = new Feedback(
-        {
-            userId,
-            likes: 1
-        }
+    await Feedback.findOneAndUpdate(
+      { userId },
+      { vote: 'like' },
+      { upsert: true, new: true }
     )
-    feedback.save()
+    const totalLikes = await Feedback.countDocuments({ vote: 'like' });
+    const totalDislikes = await Feedback.countDocuments({ vote: 'dislike' });
     res.json({
-        likes: feedback.likes,
-        dislikes: feedback.dislikes
+      likes: totalLikes,
+      dislikes: totalDislikes,
+      userVote: 'like'
     })
 
 })
@@ -44,29 +40,36 @@ router.post("/feedback/dislike", async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload
     const userId = decoded.userId
 
-    const existing = await Feedback.findOne({userId})
-    if (existing){
-        return res.status(400).json({ error: 'Already voted' })
-    }
-
-    const feedback = new Feedback(
-        {
-            userId,
-            dislikes: 1
-        }
+    await Feedback.findOneAndUpdate(
+      { userId },
+      { vote: 'dislike' },
+      { upsert: true, new: true }
     )
-    feedback.save()
+    const totalLikes = await Feedback.countDocuments({ vote: 'like' });
+    const totalDislikes = await Feedback.countDocuments({ vote: 'dislike' });
     res.json({
-        likes: feedback.likes,
-        dislikes: feedback.dislikes
+      likes: totalLikes,
+      dislikes: totalDislikes,
+      userVote: 'dislike'
     })
-
 })
 
 router.get("/feedback", async (req, res) => {
-    const totalLikes = await Feedback.countDocuments({likes: 1})
-    const totalDislikes = await Feedback.countDocuments({dislikes: 1})
-    res.json({likes: totalLikes, dislikes: totalDislikes})
+    const token = req.headers.authorization?.split(' ')[1]
+    if(!token){
+        return res.status(400).json({error: "Unauthorized"})
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload
+    const userId = decoded.userId
+    const userFeedback = await Feedback.findOne({ userId });
+
+    const totalLikes = await Feedback.countDocuments({vote: 'like'})
+    const totalDislikes = await Feedback.countDocuments({vote: 'dislike'})
+    res.json({
+        likes: totalLikes, 
+        dislikes: totalDislikes,
+        userVote: userFeedback ? userFeedback.vote : null
+    })
 })
 
 export default router
