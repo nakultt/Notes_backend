@@ -2,7 +2,7 @@ import express from "express"
 import cors from "cors"
 import mongoose from "mongoose"
 import dotenv from "dotenv"
-import x from "./auth"
+import authRouter from "./auth"
 
 dotenv.config()
 
@@ -13,7 +13,7 @@ app.use(express.json())
 const PORT = process.env.PORT!
 const MONGO_URI = process.env.MONGO_URI!
 
-app.use("/auth", x)
+app.use("/auth", authRouter)
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log("MongoDB connected"))
